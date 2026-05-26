@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Artwork Rating Task</title>
+
+<script src="https://unpkg.com/jspsych@7.3.4"></script>
+<script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.1.3"></script>
+<script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.3"></script>
+<script src="https://unpkg.com/@jspsych/plugin-html-slider-response@1.1.3"></script>
+<link rel="stylesheet" href="https://unpkg.com/jspsych@7.3.4/css/jspsych.css">
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0f1117;
+    --surface: #181c27;
+    --border:  #2a2f3d;
+    --text:    #e8eaf0;
+    --dim:     #7b82a0;
+    --accent:  #6c8eff;
+    --win:     #3dffa0;
+    --lose:    #ff4d6d;
+    --draw:    #ffd166;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+    min-height: 100vh;
+  }
+
+  /* ── jsPsych overrides ── */
+  .jspsych-display-element {
+    background: var(--bg) !important;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .jspsych-content-wrapper { width: 100%; max-width: 760px; padding: 40px 20px; }
+  .jspsych-content { width: 100%; }
+
+  /* ── Slider overrides ── */
+  .jspsych-html-slider-response-container { width: 100% !important; }
+
+  .jspsych-html-slider-response-response input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    outline: none;
+    cursor: pointer;
+    margin: 16px 0;
+  }
+
+  .jspsych-html-slider-response-response input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 3px solid var(--bg);
+    box-shadow: 0 0 0 2px var(--accent);
+    transition: transform 0.1s;
+  }
+
+  .jspsych-html-slider-response-response input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+  }
+
+  .jspsych-html-slider-response-response input[type="range"]::-moz-range-thumb {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 3px solid var(--bg);
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+
+  .jspsych-html-slider-response-response .jspsych-html-slider-response-labels {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* Submit button */
+  .jspsych-html-slider-response-next {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text) !important;
+    font-family: 'Courier New', monospace !important;
+    font-size: 11px !important;
+    letter-spacing: 3px !important;
+    text-transform: uppercase !important;
+    padding: 12px 32px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    margin-top: 20px !important;
+    transition: border-color 0.15s !important;
+  }
+
+  .jspsych-html-slider-response-next:hover {
+    border-color: var(--accent) !important;
+  }
+
+  /* Button response */
+  .jspsych-btn {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text) !important;
+    font-family: 'Courier New', monospace !important;
+    font-size: 11px !important;
+    letter-spacing: 3px !important;
+    text-transform: uppercase !important;
+    padding: 14px 36px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    transition: border-color 0.15s !important;
+  }
+
+  .jspsych-btn:hover { border-color: var(--accent) !important; }
+
+  /* ── Screens ── */
+  .screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    min-height: 480px;
+    text-align: center;
+    padding: 40px 0;
+  }
+
+  /* ── Typography ── */
+  .tag {
+    font-size: 10px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .body-text {
+    font-size: 15px;
+    line-height: 1.9;
+    color: var(--dim);
+    max-width: 520px;
+    text-align: left;
+  }
+
+  .body-text strong { color: var(--text); }
+
+  .hint {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-top: 4px;
+  }
+
+  /* ── Artwork ── */
+  .artwork-wrap {
+    width: 100%;
+    max-width: 560px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .artwork-img-box {
+    width: 100%;
+    min-height: 360px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+  }
+
+  .artwork-img-box img {
+    width: 100%;
+    max-height: 480px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .artwork-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 60px 40px;
+    color: var(--dim);
+  }
+
+  .artwork-placeholder .p-icon { font-size: 36px; }
+  .artwork-placeholder .p-title { font-size: 15px; color: var(--text); }
+  .artwork-placeholder .p-meta  { font-size: 11px; letter-spacing: 2px; color: var(--dim); }
+
+  .artwork-caption {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-top: 1px solid var(--border);
+  }
+
+  .artwork-caption-title { font-size: 13px; color: var(--text); letter-spacing: 1px; }
+  .artwork-caption-meta  { font-size: 10px; color: var(--dim); letter-spacing: 2px; text-transform: uppercase; }
+
+  /* ── Agent reveal card ── */
+  .agent-card {
+    width: 100%;
+    max-width: 560px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 4px;
+    padding: 16px 20px;
+  }
+
+  .agent-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .agent-avatar {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .agent-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+  .agent-card-name {
+    font-size: 13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .agent-card-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-top: 2px;
+  }
+
+  .agent-rating-num {
+    margin-left: auto;
+    font-size: 32px;
+    color: var(--accent);
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+
+  .agent-rating-denom {
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 2px;
+    text-align: right;
+    margin-top: 2px;
+  }
+
+  .agent-bar-track {
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    overflow: hidden;
+  }
+
+  .agent-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 1px;
+  }
+
+  /* ── Slider value display ── */
+  .slider-val-display {
+    font-size: 48px;
+    color: var(--accent);
+    text-align: center;
+    min-height: 56px;
+    line-height: 1;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+    transition: color 0.15s;
+  }
+
+  .slider-val-display.neutral { color: var(--dim); }
+
+  .rating-question {
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--dim);
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  /* ── Fixation ── */
+  .fixation {
+    font-size: 48px;
+    color: var(--dim);
+    font-weight: 100;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  /* ── Progress ── */
+  #prog-wrap {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--border);
+    z-index: 999;
+    display: none;
+  }
+
+  #prog-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  /* ── Trial layout ── */
+  .trial-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+  }
+</style>
+</head>
+<body>
+
+<div id="prog-wrap"><div id="prog-fill"></div></div>
+
+<script>
+// ══════════════════════════════════════════
+//  ARTWORKS — edit image_url to your paths
+// ══════════════════════════════════════════
+const ARTWORKS = [
+  { id:1,  title:"Water Lilies",               artist:"Claude Monet",        year:1906, image_url:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg/1280px-Claude_Monet_-_Water_Lilies_-_1906%2C_Ryerson.jpg" },
+  { id:2,  title:"The Starry Night",           artist:"Vincent van Gogh",    year:1889, image_url:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/1280px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg" },
+  { id:3,  title:"Girl with a Pearl Earring",  artist:"Johannes Vermeer",    year:1665, image_url:"https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/1665_Girl_with_a_Pearl_Earring.jpg/800px-1665_Girl_with_a_Pearl_Earring.jpg" },
+  { id:4,  title:"The Great Wave",             artist:"Katsushika Hokusai",  year:1831, image_url:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Tsunami_by_hokusai_19th_century.jpg/1280px-Tsunami_by_hokusai_19th_century.jpg" },
+  { id:5,  title:"Nighthawks",                 artist:"Edward Hopper",       year:1942, image_url:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Nighthawks_by_Edward_Hopper_1942.jpg/1280px-Nighthawks_by_Edward_Hopper_1942.jpg" },
+  { id:6,  title:"The Persistence of Memory", artist:"Salvador Dalí",        year:1931, image_url:"https://upload.wikimedia.org/wikipedia/en/d/dd/The_Persistence_of_Memory.jpg" },
+  { id:7,  title:"A Sunday on La Grande Jatte",artist:"Georges Seurat",      year:1886, image_url:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/A_Sunday_on_La_Grande_Jatte%2C_Georges_Seurat%2C_1884.jpg/1280px-A_Sunday_on_La_Grande_Jatte%2C_Georges_Seurat%2C_1884.jpg" },
+  { id:8,  title:"The Birth of Venus",         artist:"Sandro Botticelli",   year:1485, image_url:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg/1280px-Sandro_Botticelli_-_La_nascita_di_Venere_-_Google_Art_Project_-_edited.jpg" },
+  { id:9,  title:"Las Meninas",                artist:"Diego Velázquez",     year:1656, image_url:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Las_Meninas_01.jpg/900px-Las_Meninas_01.jpg" },
+  { id:10, title:"Garden of Earthly Delights", artist:"Hieronymus Bosch",    year:1515, image_url:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/The_Garden_of_earthly_delights.jpg/1200px-The_Garden_of_earthly_delights.jpg" },
+];
+
+// ══════════════════════════════════════════
+//  AGENTS — set avatar paths if you have them
+// ══════════════════════════════════════════
+const AGENTS = [
+  { id:"alex",   name:"Alex",   emoji:"🔵", avatar:"" },
+  { id:"sam",    name:"Sam",    emoji:"🟢", avatar:"" },
+  { id:"casey",  name:"Casey",  emoji:"🟠", avatar:"" },
+  { id:"jordan", name:"Jordan", emoji:"🔴", avatar:"" },
+  { id:"rng",    name:"Random", emoji:"🎲", avatar:"" },
+];
+
+const AGENT_RATINGS = {
+  alex:   {1:72,2:85,3:60,4:78,5:55,6:90,7:65,8:82,9:70,10:45},
+  sam:    {1:60,2:70,3:75,4:55,5:80,6:65,7:88,8:50,9:63,10:72},
+  casey:  {1:85,2:60,3:50,4:90,5:70,6:55,7:75,8:68,9:82,10:60},
+  jordan: {1:50,2:78,3:88,4:62,5:45,6:72,7:58,8:90,9:55,10:80},
+  rng:    {},
+};
+
+function getAgentRating(agentId, artworkId) {
+  if (agentId === "rng") return Math.floor(Math.random() * 101);
+  return AGENT_RATINGS[agentId]?.[artworkId] ?? Math.round(30 + (artworkId * 17 + 43) % 50);
+}
+
+function assignConditions(artworks, participantIndex) {
+  return artworks.map((aw, i) => ({
+    ...aw,
+    agent: AGENTS[(i + participantIndex) % AGENTS.length],
+  }));
+}
+
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+const S = {
+  pid: "TEST001",
+  participantIndex: 0,
+  phase1Ratings: {},
+  allData: [],
+  trialCount: 0,
+  totalTrials: 0,
+};
+
+function updateProgress() {
+  const wrap = document.getElementById("prog-wrap");
+  const fill = document.getElementById("prog-fill");
+  if (!wrap || !fill) return;
+  wrap.style.display = "block";
+  fill.style.width = (S.totalTrials > 0 ? (S.trialCount / S.totalTrials) * 100 : 0) + "%";
+}
+
+// ══════════════════════════════════════════
+//  HTML HELPERS
+// ══════════════════════════════════════════
+function artworkHTML(aw) {
+  const imgInner = aw.image_url
+    ? `<img src="${aw.image_url}" alt="${aw.title}" loading="lazy">`
+    : `<div class="artwork-placeholder">
+        <div class="p-icon">🖼</div>
+        <div class="p-title">${aw.title}</div>
+        <div class="p-meta">${aw.artist} · ${aw.year}</div>
+       </div>`;
+  return `
+    <div class="artwork-wrap">
+      <div class="artwork-img-box">${imgInner}</div>
+      <div class="artwork-caption">
+        <span class="artwork-caption-title">${aw.title}</span>
+        <span class="artwork-caption-meta">${aw.artist} · ${aw.year}</span>
+      </div>
+    </div>`;
+}
+
+function agentCardHTML(agent, rating) {
+  const avatarInner = agent.avatar
+    ? `<img src="${agent.avatar}" alt="${agent.name}">`
+    : agent.emoji;
+  return `
+    <div class="agent-card">
+      <div class="agent-card-header">
+        <div class="agent-avatar">${avatarInner}</div>
+        <div>
+          <div class="agent-card-name">${agent.name}</div>
+          <div class="agent-card-label">rated this artwork</div>
+        </div>
+        <div style="margin-left:auto;text-align:right;">
+          <div class="agent-rating-num">${rating}</div>
+          <div class="agent-rating-denom">/ 100</div>
+        </div>
+      </div>
+      <div class="agent-bar-track">
+        <div class="agent-bar-fill" style="width:${rating}%"></div>
+      </div>
+    </div>`;
+}
+
+function ratingBlockHTML(question) {
+  return `
+    <div style="width:100%;max-width:560px;margin:0 auto;">
+      <div class="rating-question">${question}</div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════
+//  JSPSYCH
+// ══════════════════════════════════════════
+(function() {
+  const h = document.createElement('div');
+  h.id = 'hud';
+  document.body.appendChild(h);
+})();
+
+const jsPsych = initJsPsych({
+  on_finish: () => {
+    document.getElementById("prog-wrap").style.display = "none";
+    downloadCSV();
+  }
+});
+
+function attachSliderDisplay() {
+  // Poll every 100ms for up to 3s — most reliable cross-browser approach
+  const maxAttempts = 30;
+  let attempts = 0;
+  const interval = setInterval(() => {
+    attempts++;
+    const slider = document.querySelector('input[type="range"]');
+    console.log("[slider debug] attempt", attempts, "slider:", slider);
+    if (slider && !slider.dataset.valAttached) {
+      slider.dataset.valAttached = "1";
+      clearInterval(interval);
+      console.log("[slider debug] attached! value =", slider.value, "parent =", slider.parentNode?.className);
+
+      const display = document.createElement("div");
+      display.className = "slider-val-display";
+      display.textContent = slider.value;
+      display.style.cssText = "font-size:48px;color:#6c8eff;text-align:center;width:100%;display:block;margin:8px 0;font-family:'Courier New',monospace;";
+      slider.parentNode.insertBefore(display, slider);
+
+      slider.addEventListener("input", () => {
+        display.textContent = slider.value;
+        console.log("[slider debug] value changed to", slider.value);
+      });
+    }
+    if (attempts >= maxAttempts) {
+      clearInterval(interval);
+      console.warn("[slider debug] gave up after", maxAttempts, "attempts");
+    }
+  }, 100);
+}
+
+// ── Welcome ──
+const welcome = {
+  type: jsPsychHtmlButtonResponse,
+  stimulus: `
+    <div class="screen">
+      <div class="tag">Artwork Rating Task</div>
+      <div class="body-text">
+        You will see a series of artworks. For each one:<br><br>
+        <strong>1.</strong> Rate how much you like it (0–100).<br><br>
+        <strong>2.</strong> You'll see how another person rated it.<br><br>
+        <strong>3.</strong> Re-rate the artwork — your rating can stay the same or change.<br><br>
+        There are no right or wrong answers.
+      </div>
+      <div class="hint">press begin when ready</div>
+    </div>`,
+  choices: ["Begin"],
+};
+
+// ── Per-artwork trial: rate → reveal → re-rate → ITI ──
+function makeTrial(aw) {
+  const agent       = aw.agent;
+  const agentRating = getAgentRating(agent.id, aw.id);
+  const itiMs       = 800 + Math.random() * 1200;
+
+  // Step 1: Initial rating
+  const rate1 = {
+    type: jsPsychHtmlSliderResponse,
+    stimulus: () => `
+      <div class="trial-col">
+        ${artworkHTML(aw)}
+        ${ratingBlockHTML("How much do you like this artwork?")}
+      </div>`,
+    labels: ["0 · Dislike", "50 · Neutral", "100 · Like"],
+    min: 0, max: 100, slider_start: 50,
+    require_movement: true,
+    button_label: "Submit",
+    trial_duration: 8000,
+    on_start: attachSliderDisplay,
+    on_finish: (data) => {
+      S.phase1Ratings[aw.id] = data.response;
+      S.trialCount++;
+      updateProgress();
+    },
+  };
+
+  // Step 2: Agent reveal (fixed 3 s, no response)
+  const reveal = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: () => `
+      <div class="trial-col">
+        ${artworkHTML(aw)}
+        ${agentCardHTML(agent, agentRating)}
+      </div>`,
+    choices: "NO_KEYS",
+    trial_duration: 3000,
+  };
+
+  // Step 3: Re-rating (agent card stays visible)
+  const rate2 = {
+    type: jsPsychHtmlSliderResponse,
+    stimulus: () => `
+      <div class="trial-col">
+        ${artworkHTML(aw)}
+        ${agentCardHTML(agent, agentRating)}
+        ${ratingBlockHTML("Now rate this artwork again")}
+      </div>`,
+    labels: ["0 · Dislike", "50 · Neutral", "100 · Like"],
+    min: 0, max: 100,
+    slider_start: () => S.phase1Ratings[aw.id] ?? 50,
+    require_movement: false,
+    button_label: "Submit",
+    trial_duration: 8000,
+    on_start: attachSliderDisplay,
+    on_finish: (data) => {
+      const p1  = S.phase1Ratings[aw.id] ?? 50;
+      const p2  = data.response;
+      const d   = p2 - p1;
+      const max = Math.abs(agentRating - p1);
+      S.allData.push({
+        participant_id:       S.pid,
+        artwork_id:           aw.id,
+        artwork_title:        aw.title,
+        artist:               aw.artist,
+        agent_id:             agent.id,
+        agent_name:           agent.name,
+        agent_rating:         agentRating,
+        phase1_rating:        p1,
+        phase2_rating:        p2,
+        delta:                d,
+        normalised_influence: max > 0 ? (d / max).toFixed(4) : "0",
+        rt_ms:                data.rt,
+        timestamp:            Date.now(),
+      });
+      S.trialCount++;
+      updateProgress();
+    },
+  };
+
+  // Step 4: ITI
+  const iti = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: `<div class="fixation">+</div>`,
+    choices: "NO_KEYS",
+    trial_duration: itiMs,
+  };
+
+  return [rate1, reveal, rate2, iti];
+}
+
+// ── End ──
+const endTrial = {
+  type: jsPsychHtmlButtonResponse,
+  stimulus: `
+    <div class="screen">
+      <div class="tag">Task complete</div>
+      <div class="body-text" style="text-align:center;">
+        Thank you — your responses have been saved.
+      </div>
+      <div class="hint">press finish to close</div>
+    </div>`,
+  choices: ["Finish"],
+  on_start: () => {
+    document.getElementById("prog-wrap").style.display = "none";
+  },
+};
+
+// ══════════════════════════════════════════
+//  CSV EXPORT
+// ══════════════════════════════════════════
+function downloadCSV() {
+  if (!S.allData.length) return;
+  const cols = Object.keys(S.allData[0]);
+  const rows = S.allData.map(r => cols.map(c => r[c] ?? '').join(','));
+  const a    = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([[cols.join(','), ...rows].join('\n')], {type:'text/csv'})),
+    download: `${S.pid}_social_influence.csv`,
+  });
+  a.click();
+}
+
+// ══════════════════════════════════════════
+//  BUILD & RUN
+// ══════════════════════════════════════════
+function buildAndRun(pid, participantIndex, nArtworks) {
+  S.pid = pid;
+  S.participantIndex = participantIndex;
+
+  const artworks     = assignConditions(ARTWORKS.slice(0, nArtworks), participantIndex);
+  S.totalTrials      = artworks.length * 2;
+  S.trialCount       = 0;
+
+  const timeline = [welcome, ...artworks.flatMap(makeTrial), endTrial];
+  jsPsych.run(timeline);
+}
+
+const p = new URLSearchParams(window.location.search);
+buildAndRun(
+  p.get("pid")               || "TEST001",
+  parseInt(p.get("participant_index") || "0"),
+  parseInt(p.get("n_artworks")        || String(ARTWORKS.length)),
+);
+</script>
+</body>
+</html>
