@@ -38,7 +38,9 @@ export type Trial = {
   image_url: string;
   pair_condition: string;
   agent1: string;
+  agent1_code: string;
   agent2: string;
+  agent2_code: string;
   agent1_rating: number;
   agent2_rating: number;
   avg_rating: number;

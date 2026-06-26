@@ -39,10 +39,8 @@ export default function PilotApp() {
       const s = await createSession({
         participant_id: pid,
         mode,
-        friendly_pair:         params.get("friendly") ?? undefined,
-        neutral_pair:          params.get("neutral") ?? undefined,
-        friendly_control_pair: params.get("friendly_control") ?? undefined,
-        neutral_control_pair:  params.get("neutral_control") ?? undefined,
+        friendly_pair: params.get("friendly") ?? undefined,
+        neutral_pair:  params.get("neutral") ?? undefined,
         sc_session_id,
       });
 

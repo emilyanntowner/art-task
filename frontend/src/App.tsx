@@ -54,7 +54,10 @@ export default function App() {
           Social Influence Task — Dev
         </h1>
         <p className="text-sm text-slate-500 mb-6">
-          Dev mode: launches full Phase 1 + Phase 2 with test stimuli.
+          Dev mode — runs all 120 trials with default agent pairs (no Prolific
+          ID required). Participant index is always 0 and data is saved to the
+          local database. Use <code className="font-mono">?mode=pilot</code> or{" "}
+          <code className="font-mono">?mode=full</code> for real study sessions.
         </p>
 
         <button

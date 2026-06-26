@@ -26,7 +26,7 @@ load_dotenv()
 
 from .db import Base, engine, get_db
 from . import models
-from .stimuli import build_trials, DEFAULT_PAIRS
+from .stimuli import build_trials, DEFAULT_PAIRS, get_control_avatar, get_pairs_for_rotation
 from .pilot import assign_participant_index, ParticipantCounter
 
 
@@ -79,10 +79,8 @@ def require_session_token(
 class CreateSessionBody(BaseModel):
     participant_id: str
     mode: Literal["pilot", "full", "dev"] = "dev"
-    friendly_pair: str | None = None
-    neutral_pair: str | None = None
-    friendly_control_pair: str | None = None
-    neutral_control_pair: str | None = None
+    friendly_pair: str | None = None   # avatar codes e.g. "r1m1,r2f1"
+    neutral_pair: str | None = None    # controls are always auto-derived
     sc_session_id: str | None = None
 
 
@@ -153,20 +151,29 @@ def create_session(body: CreateSessionBody, db: DBSession = Depends(get_db)):
 
     trial_limit = 12 if body.mode == "pilot" else None
 
-    def parse_pair(s: str | None, default: tuple) -> tuple[str, str]:
+    import json as _json
+
+    def parse_pair(s: str | None) -> tuple[str, str] | None:
         if s:
             parts = [p.strip() for p in s.split(",") if p.strip()]
             if len(parts) >= 2:
                 return (parts[0], parts[1])
-        return default
+        return None
 
-    import json as _json
-    pairs = {
-        "friendly":         parse_pair(body.friendly_pair,         DEFAULT_PAIRS["friendly"]),
-        "neutral":          parse_pair(body.neutral_pair,          DEFAULT_PAIRS["neutral"]),
-        "friendly_control": parse_pair(body.friendly_control_pair, DEFAULT_PAIRS["friendly_control"]),
-        "neutral_control":  parse_pair(body.neutral_control_pair,  DEFAULT_PAIRS["neutral_control"]),
-    }
+    friendly = parse_pair(body.friendly_pair)
+    neutral  = parse_pair(body.neutral_pair)
+
+    if friendly and neutral:
+        # Pairs supplied directly (e.g. from social connection task handoff)
+        pairs = {
+            "friendly":         friendly,
+            "neutral":          neutral,
+            "friendly_control": tuple(get_control_avatar(a) for a in friendly),
+            "neutral_control":  tuple(get_control_avatar(a) for a in neutral),
+        }
+    else:
+        # Look up from counterbalancing table by participant index
+        pairs = get_pairs_for_rotation(participant_index)
 
     trials = build_trials(participant_index, pairs, trial_limit=trial_limit)
 

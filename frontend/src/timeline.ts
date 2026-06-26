@@ -60,10 +60,10 @@ function sliderHtml(stimulus: string): string {
   `;
 }
 
-function artworkImageHtml(trial: Artwork, size: "md" | "lg" = "lg"): string {
-  const maxW = size === "lg" ? "600px" : "480px";
-  const maxH = size === "lg" ? "480px" : "360px";
-  const placeholderH = size === "lg" ? "360px" : "280px";
+function artworkImageHtml(trial: Artwork): string {
+  const maxW = "600px";
+  const maxH = "480px";
+  const placeholderH = "360px";
   if (trial.image_url) {
     return `<img src="${trial.image_url}"
                  alt="${trial.title}"
@@ -80,27 +80,38 @@ function artworkImageHtml(trial: Artwork, size: "md" | "lg" = "lg"): string {
   `;
 }
 
-function agentPairRevealHtml(agent1: string, agent2: string, avgRating: number): string {
-  const avatar = `
-    <div style="width:80px;height:80px;border-radius:50%;background:#e2e8f0;border:2px solid #cbd5e1;
-                margin:0 auto 0.5rem;display:flex;align-items:center;justify-content:center;
-                font-size:2.2rem;color:#94a3b8;">
-      👤
+function avatarHtml(name: string, code: string): string {
+  return `
+    <div style="text-align:center;">
+      <div style="width:90px;height:90px;border-radius:50%;overflow:hidden;
+                  margin:0 auto 0.5rem;border:2px solid #cbd5e1;background:#e2e8f0;">
+        <img src="/avatars/${code}.jpg" alt="${name}"
+             style="width:100%;height:100%;object-fit:cover;"
+             onerror="this.style.display='none';this.parentElement.innerHTML+='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.2rem;color:#94a3b8;\\'>👤</div>'">
+      </div>
+      <div style="font-size:0.95rem;font-weight:600;color:#334155;">${name}</div>
     </div>
   `;
+}
+
+function agentPairRevealHtml(
+  agent1: string, agent1Code: string,
+  agent2: string, agent2Code: string,
+  avgRating: number,
+): string {
+  // Randomise left/right display order
+  const agent1First = Math.random() < 0.5;
+  const [leftName, leftCode, rightName, rightCode] = agent1First
+    ? [agent1, agent1Code, agent2, agent2Code]
+    : [agent2, agent2Code, agent1, agent1Code];
+
   return `
     <div style="display:flex;gap:3rem;justify-content:center;margin:1.25rem 0 1.5rem;">
-      <div style="text-align:center;">
-        ${avatar}
-        <div style="font-size:0.95rem;font-weight:600;color:#334155;">${agent1}</div>
-      </div>
-      <div style="text-align:center;">
-        ${avatar}
-        <div style="font-size:0.95rem;font-weight:600;color:#334155;">${agent2}</div>
-      </div>
+      ${avatarHtml(leftName, leftCode)}
+      ${avatarHtml(rightName, rightCode)}
     </div>
     <div style="text-align:center;font-size:1rem;color:#475569;">
-      The average of <strong>${agent1}</strong> and <strong>${agent2}</strong>'s rating is
+      The average of <strong>${leftName}</strong> and <strong>${rightName}</strong>'s rating is
       <span style="font-size:2rem;font-weight:700;color:#1e293b;margin-left:0.3rem;">${avgRating}</span>
       <span style="font-size:0.85rem;color:#94a3b8;"> / 100</span>
     </div>
@@ -183,7 +194,7 @@ function buildTrials(ctx: TaskContext, blockId: string, _jsPsych: JsPsych) {
         <div style="position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
           <div style="max-width:50rem;width:100%;text-align:center;padding:0 1rem;">
             ${artworkImageHtml(trial)}
-            ${agentPairRevealHtml(trial.agent1, trial.agent2, trial.avg_rating)}
+            ${agentPairRevealHtml(trial.agent1, trial.agent1_code, trial.agent2, trial.agent2_code, trial.avg_rating)}
           </div>
         </div>
       `,
@@ -206,7 +217,7 @@ function buildTrials(ctx: TaskContext, blockId: string, _jsPsych: JsPsych) {
 
     const reratingTrial = {
       type: HtmlSliderResponse,
-      stimulus: sliderHtml(artworkImageHtml(trial, "md")),
+      stimulus: sliderHtml(artworkImageHtml(trial)),
       labels: ["0<br>Not at all", "100<br>Extremely"],
       min: 0,
       max: 100,
@@ -238,8 +249,8 @@ function buildTrials(ctx: TaskContext, blockId: string, _jsPsych: JsPsych) {
           rating: data.response,
           rating_type: "rerate",
           pair_condition: trial.pair_condition,
-          agent1_condition: trial.agent1,
-          agent2_condition: trial.agent2,
+          agent1_condition: trial.agent1_code,
+          agent2_condition: trial.agent2_code,
           agent1_rating: trial.agent1_rating,
           agent2_rating: trial.agent2_rating,
           avg_rating: trial.avg_rating,
