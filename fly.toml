@@ -1,12 +1,12 @@
 # fly.toml app configuration file for social-influence-task
-app = 'social-influence-task'
+app = 'test-social-influence-task'
 primary_region = 'lax'
 
 [build]
 
 [env]
   DATABASE_URL = "sqlite:////data/social_influence.db"
-  FRONTEND_ORIGIN = "https://social-influence-task.fly.dev"
+  FRONTEND_ORIGIN = "https://test-social-influence-task.fly.dev"
 
 # Set via: fly secrets set PROLIFIC_COMPLETION_URL=https://...
 # Never hardcode study completion URLs here
