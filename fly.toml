@@ -29,3 +29,4 @@ primary_region = 'lax'
 [[mounts]]
   source = "social_influence_data"
   destination = "/data"
+
