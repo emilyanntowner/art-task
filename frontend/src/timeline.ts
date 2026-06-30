@@ -132,14 +132,20 @@ function addSliderValueDisplay() {
 function addScreenOverlays(trialIndex: number, total: number, durationMs: number) {
   const container = document.querySelector('.jspsych-display-element') || document.body;
 
+  // Remove stale overlays from previous trial
+  document.getElementById('si-progress-counter')?.remove();
+  document.getElementById('si-countdown-timer')?.remove();
+
   // Progress counter — top right
   const progress = document.createElement('div');
+  progress.id = 'si-progress-counter';
   progress.style.cssText = 'position:fixed;top:1rem;right:1.5rem;font-size:0.85rem;color:#94a3b8;z-index:100;';
   progress.textContent = `${trialIndex + 1} / ${total}`;
   container.appendChild(progress);
 
   // Countdown timer — top left
   const timer = document.createElement('div');
+  timer.id = 'si-countdown-timer';
   timer.style.cssText = 'position:fixed;top:1rem;left:1.5rem;font-size:0.85rem;color:#94a3b8;z-index:100;';
   const t0 = performance.now();
   timer.textContent = `${Math.ceil(durationMs / 1000)}s`;
