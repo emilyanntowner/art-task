@@ -3,6 +3,7 @@ app = 'test-social-influence-task'
 primary_region = 'lax'
 
 [build]
+  dockerfile = "Dockerfile"
 
 [env]
   DATABASE_URL = "sqlite:////data/social_influence.db"
