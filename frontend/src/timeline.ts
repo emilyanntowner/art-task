@@ -51,12 +51,12 @@ function logEvent(
 // Artwork is position:fixed so its viewport position is identical across
 // initial-rating, reveal, and re-rating phases regardless of jsPsych's
 // internal layout differences between HtmlSliderResponse / HtmlKeyboardResponse.
-const ARTWORK_TOP    = "16rem";   // distance from viewport top
-const ARTWORK_ZONE_H = "360px";    // height of the fixed artwork zone
+const ARTWORK_TOP    = "7rem";    // distance from viewport top
+const ARTWORK_ZONE_H = "330px";   // height of the fixed artwork zone
 
 function artworkContainerHtml(trial: Trial): string {
   const inner = trial.image_url
-    ? `<div style="width:580px;max-width:94vw;height:360px;border-radius:4px;
+    ? `<div style="width:590px;max-width:94vw;height:315px;border-radius:4px;
                   display:flex;align-items:center;justify-content:center;">
          <img src="${trial.image_url}" alt="${trial.title}"
               style="width:100%;height:100%;object-fit:contain;border-radius:4px;display:block;">
@@ -83,7 +83,7 @@ function ratingStimulus(trial: Trial): string {
   return `
     <div style="max-width:54rem;margin:0 auto;text-align:center;">
       ${artworkContainerHtml(trial)}
-      <p style="font-size:1.1rem;color:#475569;margin:0.25rem 0 0.75rem;">
+      <p style="font-size:1rem;color:#475569;margin:0.1rem 0 0.4rem;">
         How much do you like this artwork?
       </p>
     </div>
@@ -134,7 +134,7 @@ function addSliderValueDisplay() {
   const slider = document.querySelector('input[type="range"]') as HTMLInputElement | null;
   if (!slider) return;
   const display = document.createElement('div');
-  display.style.cssText = 'text-align:center;font-size:2.5rem;font-weight:600;color:#1e293b;margin:1.25rem 0 0.25rem;min-height:3rem;';
+  display.style.cssText = 'text-align:center;font-size:2rem;font-weight:600;color:#1e293b;margin:0.4rem 0 0.1rem;min-height:2.5rem;';
   display.textContent = slider.value;
   slider.parentNode!.insertBefore(display, slider.nextSibling);
   slider.addEventListener('input', () => { display.textContent = slider.value; });

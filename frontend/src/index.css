@@ -34,7 +34,7 @@ body {
 
 /* Bigger slider track and thumb */
 .jspsych-html-slider-response-container {
-  padding: 1rem 0 0.5rem;
+  padding: 0.4rem 0 0.25rem;
 }
 .jspsych-html-slider-response-container input[type="range"] {
   width: 100%;
