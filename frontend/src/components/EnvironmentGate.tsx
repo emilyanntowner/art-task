@@ -33,7 +33,7 @@ function checkEnv(): EnvCheck {
   return {
     fine_pointer: window.matchMedia("(any-pointer: fine)").matches,
     big_enough:   window.innerWidth >= MIN_WIDTH && window.innerHeight >= MIN_HEIGHT,
-    fullscreen:   !!document.fullscreenElement,
+    fullscreen:   !!(document.fullscreenElement || (document as any).webkitFullscreenElement),
     focused:      document.hasFocus() && document.visibilityState !== "hidden",
   };
 }
@@ -144,15 +144,21 @@ export default function EnvironmentGate({ sessionId, token, children }: Props) {
     if (nogate) return;
     window.addEventListener("resize", refresh);
     document.addEventListener("fullscreenchange", refresh);
+    document.addEventListener("webkitfullscreenchange", refresh);
     window.addEventListener("focus", refresh);
     window.addEventListener("blur", refresh);
     document.addEventListener("visibilitychange", refresh);
+    // Polling fallback: catches any missed events (e.g. browser-level fullscreen
+    // exits that don't reliably fire fullscreenchange in all browsers).
+    const poll = setInterval(refresh, 1000);
     return () => {
       window.removeEventListener("resize", refresh);
       document.removeEventListener("fullscreenchange", refresh);
+      document.removeEventListener("webkitfullscreenchange", refresh);
       window.removeEventListener("focus", refresh);
       window.removeEventListener("blur", refresh);
       document.removeEventListener("visibilitychange", refresh);
+      clearInterval(poll);
     };
   }, [nogate, refresh]);
 
@@ -243,7 +249,9 @@ export default function EnvironmentGate({ sessionId, token, children }: Props) {
                 onClick={async () => {
                   setFsReq(true);
                   try {
-                    await document.documentElement.requestFullscreen();
+                    const el = document.documentElement;
+                    const rfs = el.requestFullscreen ?? (el as any).webkitRequestFullscreen;
+                    if (rfs) await rfs.call(el);
                   } catch {
                     // user denied — they'll see the overlay again
                   }
