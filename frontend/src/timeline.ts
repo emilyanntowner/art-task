@@ -1,16 +1,12 @@
 /**
- * Social Influence Task — jsPsych Timeline
+ * Art Task — jsPsych Timeline
  *
- * Two-phase structure:
- *   Phase 1 (baseline): 50 artwork ratings, no agent info shown.
- *   Phase 2 (influence): 50 artwork ratings, each preceded by agent's rating.
- *
- * Trial structure per Phase 2 trial:
- *   1. Artwork + agent rating reveal (4 s)
- *   2. Re-rating: participant rates on 0-100 slider (self-paced, <=8 s)
- *   3. ITI: fixation cross (2-4 s jittered)
- *
- * Phase 1 trials use the same slider, no reveal step.
+ * Single-phase, 120-trial structure (30 artworks × 4 pair-conditions).
+ * Each trial:
+ *   1. Initial rating — participant rates artwork on 0–100 slider
+ *   2. Feedback reveal — artwork + two agent avatars + their avg rating (5 s)
+ *   3. Re-rating — participant re-rates (self-paced)
+ *   4. Blank ITI — 500 ms
  */
 
 import type { JsPsych } from "jspsych";

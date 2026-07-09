@@ -96,6 +96,7 @@ uv run uvicorn app.main:app --reload --port 8001
 **Frontend** (port 5174):
 ```bash
 cd frontend
+echo "VITE_API_BASE=http://localhost:8001" > .env.local
 npm install
 npm run dev
 ```

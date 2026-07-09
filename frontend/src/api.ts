@@ -27,7 +27,7 @@ async function json<T>(res: Response): Promise<T> {
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type Mode = "test" | "full" | "dev";
+export type Mode = "test" | "full";
 
 export type Trial = {
   artwork_id: number;
@@ -60,8 +60,6 @@ export async function createSession(body: {
   participant_id: string;
   mode: Mode;
   participant_number?: number;
-  friendly_pair?: string;
-  neutral_pair?: string;
   sc_session_id?: string;
 }): Promise<CreateSessionResponse> {
   const result = await json<CreateSessionResponse>(
@@ -107,8 +105,6 @@ export async function submitRating(
     pair_condition?: string;
     agent1_condition?: string;
     agent2_condition?: string;
-    agent1_rating?: number;
-    agent2_rating?: number;
     avg_rating?: number;
     offset_magnitude?: number;
     offset_sign?: number;

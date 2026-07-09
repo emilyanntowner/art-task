@@ -1,14 +1,13 @@
 """
-Social Influence Task — FastAPI Backend
+Art Task — FastAPI Backend
 
 Endpoints:
-  POST /sessions                          — create session, assign participant index
-  POST /sessions/{id}/blocks              — start a rating block (phase 1 or 2)
+  POST /sessions                           — create session, assign participant index
+  POST /sessions/{id}/blocks               — start a rating block
   POST /sessions/{id}/blocks/{bid}/ratings — submit a single artwork rating
-  POST /sessions/{id}/events              — log a jsPsych timeline event
-  GET  /sessions/{id}/assignment          — return this participant's artwork-condition assignment
-  POST /sessions/{id}/complete            — stamp ended_at, return Prolific URL
-  GET  /health                            — health check
+  POST /sessions/{id}/events               — log a jsPsych timeline event
+  POST /sessions/{id}/complete             — stamp ended_at, return Prolific URL
+  GET  /health                             — health check
 """
 
 import logging
@@ -30,7 +29,7 @@ load_dotenv()
 from .db import Base, engine, get_db
 from . import models
 from .stimuli import build_trials, DEFAULT_PAIRS, get_pairs_for_config
-from .pilot import assign_participant_index, ParticipantCounter
+from .pilot import assign_participant_index
 
 
 @asynccontextmanager
@@ -81,7 +80,7 @@ def require_session_token(
 
 class CreateSessionBody(BaseModel):
     participant_id: str
-    mode: Literal["test", "full", "dev"] = "dev"
+    mode: Literal["test", "full"] = "test"
     participant_number: int | None = None  # 1-24; selects counterbalancing config
     sc_session_id: str | None = None
 
